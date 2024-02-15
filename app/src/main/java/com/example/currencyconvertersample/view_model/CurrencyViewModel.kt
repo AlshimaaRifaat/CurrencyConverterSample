@@ -3,9 +3,15 @@ package com.example.currencyconvertersample.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.currencyconvertersample.helper.NetworkHelper
+import com.example.currencyconvertersample.model.CurrencySymbolsResponse
+import com.example.currencyconvertersample.model.LatestCurrenciesResponse
+import com.example.currencyconvertersample.utils.NetworkHelper
 import com.example.currencyconvertersample.repository.CurrencyRepository
+import com.example.currencyconvertersample.utils.API_KEY
+import com.example.currencyconvertersample.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,11 +21,15 @@ class CurrencyViewModel @Inject constructor(
     private val repository: CurrencyRepository,
     private val networkHelper: NetworkHelper
 ) : ViewModel() {
-    var currencySymbols = mutableStateOf<Map<String, String>>(mapOf())
+    var currencySymbolsResponse = mutableStateOf<Resource<CurrencySymbolsResponse>>(Resource.Loading())
         private set
 
-    var errorMessage = mutableStateOf<String?>(null)
-        private set
+  /*  var errorMessage = mutableStateOf<String?>(null)
+        private set*/
+
+    private val _latestCurrenciesResponse = MutableLiveData<Resource<LatestCurrenciesResponse>>()
+     val latestCurrenciesResponse: LiveData<Resource<LatestCurrenciesResponse>> = _latestCurrenciesResponse
+
 
     var convertedAmount = mutableStateOf<String>("")
         private set
@@ -27,25 +37,48 @@ class CurrencyViewModel @Inject constructor(
     var amount = mutableStateOf<String>("1")
         private set
 
+    var fromCurrency = mutableStateOf<String>("")
+        private set
+    var toCurrency = mutableStateOf<String>("")
+        private set
+
     init {
         loadCurrencySymbols()
+        fetchLatestCurrencies()
     }
 
     private fun loadCurrencySymbols() {
         viewModelScope.launch {
             try {
                 if (isNetworkAvailable()) {
-                    val apiKey = "ddcc54d739557a79b5b81c5e75a9b13a"
-                    val result = repository.getCurrencySymbols(apiKey)
-                    currencySymbols.value = result ?: mapOf()
-                    errorMessage.value = null // Reset error message on successful load
+                    val response = repository.getCurrencySymbols(API_KEY)
+                        currencySymbolsResponse.value = if(response.body()?.success==true) {
+                            Resource.Success(response.body()!!)
+                        } else {
+                            Resource.Error("You have not supplied a valid API Access Key. [Technical Support: support@apilayer.com]")
+                        }
+
                 } else {
-                    errorMessage.value = "No internet connection"
+                    currencySymbolsResponse.value = Resource.Error("No internet connection")
                 }
             } catch (e: Exception) {
-                errorMessage.value = "Failed to load currency symbols: ${e.message}"
-
+                currencySymbolsResponse.value= Resource.Error("Failed to load currency symbols: ${e.message}")
             }
+        }
+    }
+
+    private fun fetchLatestCurrencies() = viewModelScope.launch {
+        _latestCurrenciesResponse.postValue(Resource.Loading())
+        try {
+            val response = repository.getLatestCurrencies(API_KEY)
+            if(response.isSuccessful && response.body()?.success==true){
+                _latestCurrenciesResponse.postValue(Resource.Success(response.body()!!))
+            }else{
+                _latestCurrenciesResponse.postValue(Resource.Error("You have not supplied a valid API Access Key. [Technical Support: support@apilayer.com]"))
+            }
+
+        }catch (e: Exception) {
+            _latestCurrenciesResponse.postValue(Resource.Error("No internet connection"))
         }
     }
 
@@ -61,17 +94,21 @@ class CurrencyViewModel @Inject constructor(
 
 
 
-    fun onAmountChanged(newAmount: String, fromCurrency: String, toCurrency: String) {
+    fun onAmountChanged(newAmount: String) {
         amount.value = newAmount
-        val rate = getConversionRate(fromCurrency, toCurrency)
-        val result = newAmount.toDoubleOrNull()?.times(rate) ?: 0.0
+        convertCurrency()
+    }
+
+    fun convertCurrency(){
+        val rate = getConversionRate(fromCurrency.value, toCurrency.value)
+        val result = amount.value.toDoubleOrNull()?.times(rate) ?: 0.0
         convertedAmount.value = result.toString()
     }
 
-    fun onConvertedAmountChanged(newConvertedAmount: String, fromCurrency: String, toCurrency: String) {
+    fun onConvertedAmountChanged(newConvertedAmount: String) {
         convertedAmount.value = newConvertedAmount
-        val rate = getConversionRate(fromCurrency,toCurrency)
-        val result=  newConvertedAmount.toDoubleOrNull()?.div(rate)?: 0.0
+        val rate = getConversionRate(toCurrency.value,fromCurrency.value)
+        val result=  newConvertedAmount.toDoubleOrNull()?.times(rate)?: 0.0
         amount.value = result.toString()
 
     }
@@ -92,13 +129,12 @@ class CurrencyViewModel @Inject constructor(
         return conversionRates[key] ?: 2.0
     }
 
-    fun swapCurrencies() {
-  /*      val temp = fromCurrency.value
-        fromCurrency.value = toCurrency.value
-        toCurrency.value = temp
-        // Trigger conversion calculation
-        onAmountChanged(amount.value, fromCurrency.value, toCurrency.value)*/
+    fun swapCurrencies(fromCurrency: String, toCurrency: String) {
+      // val temp = fromC
     }
+
+
+
 
 
 }

@@ -2,7 +2,7 @@ package com.example.currencyconvertersample.di.module
 
 import android.content.Context
 import com.example.currencyconvertersample.api_service.CurrencyApiService
-import com.example.currencyconvertersample.helper.NetworkHelper
+import com.example.currencyconvertersample.utils.NetworkHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
