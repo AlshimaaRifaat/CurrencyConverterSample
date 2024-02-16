@@ -1,6 +1,6 @@
 package com.example.currencyconvertersample.model
 
-data class LatestCurrenciesResponse(
+data class LatestRatesResponse(
     val success: Boolean,
     val timestamp: Long,
     val base: String,

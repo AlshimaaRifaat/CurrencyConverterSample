@@ -18,7 +18,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.bottomNav.BottomNavMainActivity"
+            android:name=".ui.bottom_nav.BottomNavMainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.MainActivity"

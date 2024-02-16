@@ -1,4 +1,4 @@
-package com.example.currencyconvertersample.ui.bottomNav.popular_currencies
+package com.example.currencyconvertersample.ui.bottom_nav
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text

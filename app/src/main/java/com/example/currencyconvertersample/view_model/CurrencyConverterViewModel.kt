@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconvertersample.model.CurrencySymbolsResponse
-import com.example.currencyconvertersample.model.LatestCurrenciesResponse
+import com.example.currencyconvertersample.model.LatestRatesResponse
 import com.example.currencyconvertersample.utils.NetworkHelper
 import com.example.currencyconvertersample.repository.CurrencyRepository
 import com.example.currencyconvertersample.utils.API_KEY
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CurrencyViewModel @Inject constructor(
+class CurrencyConverterViewModel @Inject constructor(
     private val repository: CurrencyRepository,
     private val networkHelper: NetworkHelper
 ) : ViewModel() {
@@ -25,8 +25,8 @@ class CurrencyViewModel @Inject constructor(
         private set
 
 
-    private val _latestCurrenciesResponse = MutableLiveData<Resource<LatestCurrenciesResponse>>()
-     val latestCurrenciesResponse: LiveData<Resource<LatestCurrenciesResponse>> = _latestCurrenciesResponse
+    private val _latestCurrenciesResponse = MutableLiveData<Resource<LatestRatesResponse>>()
+     val latestCurrenciesResponse: LiveData<Resource<LatestRatesResponse>> = _latestCurrenciesResponse
 
 
     var convertedAmount = mutableStateOf<String>("")
@@ -42,7 +42,6 @@ class CurrencyViewModel @Inject constructor(
 
     init {
         loadCurrencySymbols()
-        fetchLatestCurrencies()
     }
 
     private fun loadCurrencySymbols() {
@@ -65,10 +64,10 @@ class CurrencyViewModel @Inject constructor(
         }
     }
 
-    private fun fetchLatestCurrencies() = viewModelScope.launch {
+     fun fetchLatestRates(base: String ? = null,apiKey: String? = API_KEY) = viewModelScope.launch {
         _latestCurrenciesResponse.postValue(Resource.Loading())
         try {
-            val response = repository.getLatestCurrencies(API_KEY)
+            val response = repository.getLatestRates(base ?: ""  ,apiKey ?: API_KEY)
             if(response.isSuccessful && response.body()?.success==true){
                 _latestCurrenciesResponse.postValue(Resource.Success(response.body()!!))
             }else{

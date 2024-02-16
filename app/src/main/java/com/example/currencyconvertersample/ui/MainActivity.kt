@@ -1,6 +1,5 @@
 package com.example.currencyconvertersample.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,9 +18,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.currencyconvertersample.ui.bottomNav.BottomNavMainActivity
+import com.example.currencyconvertersample.ui.bottom_nav.BottomNavMainActivity
+import com.example.currencyconvertersample.utils.BASE
 import com.example.currencyconvertersample.utils.Resource
-import com.example.currencyconvertersample.view_model.CurrencyViewModel
+import com.example.currencyconvertersample.view_model.CurrencyConverterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -44,15 +44,18 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyViewModel = hiltViewModel()) {
-    val currencySymbolsResponse by viewModel.currencySymbolsResponse
+fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyConverterViewModel = hiltViewModel()) {
+    LaunchedEffect(key1 = true) {
+        viewModel.fetchLatestRates()
+    }
 
+    val currencySymbolsResponse by viewModel.currencySymbolsResponse
 
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (currencySymbolsResponse) {
@@ -75,11 +78,10 @@ fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyVie
     }
 }
 
-
 @Composable
 fun CurrencySelectionDropdowns(
     currencySymbols: Map<String, String>,
-    viewModel: CurrencyViewModel,
+    viewModel: CurrencyConverterViewModel,
     navController: NavController
 ) {
     var expandedFrom by remember { mutableStateOf(false) }
@@ -88,10 +90,14 @@ fun CurrencySelectionDropdowns(
     var toCurrency by viewModel.toCurrency
     val amount by viewModel.amount
     val convertedAmount by viewModel.convertedAmount
-    val context= LocalContext.current
+    val context = LocalContext.current
 
-    Column {
-        Row {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
             CurrencyDropdown(
                 expanded = expandedFrom,
                 onExpandChange = { expandedFrom = it },
@@ -100,17 +106,33 @@ fun CurrencySelectionDropdowns(
                 currencySymbols = currencySymbols,
                 label = "From"
             )
-            AmountInputField(amount, "Amount") {newAmount ->
-               viewModel.onAmountChanged(newAmount)
+            Spacer(modifier = Modifier.width(16.dp))
+            AmountInputField(amount, "Amount") { newAmount ->
+                viewModel.onAmountChanged(newAmount)
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-        CommonButton("Swap") {
-            viewModel.swapCurrencies(fromCurrency, toCurrency)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            CommonButton("Swap") {
+                viewModel.swapCurrencies(fromCurrency, toCurrency)
+            }
+            CommonButton("Details") {
+                val intent = Intent(context, BottomNavMainActivity::class.java).apply {
+                    putExtra("fromCurrency", fromCurrency)
+                }
+                context.startActivity(intent)
+
+            }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        Row {
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
             CurrencyDropdown(
                 expanded = expandedTo,
                 onExpandChange = { expandedTo = it },
@@ -119,16 +141,11 @@ fun CurrencySelectionDropdowns(
                 currencySymbols = currencySymbols,
                 label = "To"
             )
-            AmountInputField(convertedAmount, "Converted Amount"){newConvertedAmount->
-               viewModel.onConvertedAmountChanged(newConvertedAmount)
+            Spacer(modifier = Modifier.width(16.dp))
+            AmountInputField(convertedAmount, "Converted Amount") { newConvertedAmount ->
+                viewModel.onConvertedAmountChanged(newConvertedAmount)
             }
         }
-        CommonButton("Details"){
-            // Start BottomNavMainActivity
-            val intent = Intent(context, BottomNavMainActivity::class.java)
-            context.startActivity(intent)
-        }
-
     }
 }
 
@@ -162,7 +179,7 @@ fun CurrencyDropdown(
 }
 
 @Composable
-fun CommonButton(text: String,onButtonClicked: ()-> Unit) {
+fun CommonButton(text: String, onButtonClicked: () -> Unit) {
     Button(onClick = { onButtonClicked() }) {
         Text(text)
     }
@@ -173,7 +190,7 @@ fun AmountInputField(value: String, label: String, onValueChange: (String) -> Un
     OutlinedTextField(
         value = value,
         onValueChange = { newValue ->
-           if (newValue.all { it.isDigit() || it == '.' }) {
+            if (newValue.all { it.isDigit() || it == '.' }) {
                 onValueChange(newValue)
             }
         },
@@ -181,3 +198,4 @@ fun AmountInputField(value: String, label: String, onValueChange: (String) -> Un
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )
 }
+

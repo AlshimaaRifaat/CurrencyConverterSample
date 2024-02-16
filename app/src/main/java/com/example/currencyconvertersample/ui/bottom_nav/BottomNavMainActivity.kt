@@ -1,4 +1,4 @@
-package com.example.currencyconvertersample.ui.bottomNav
+package com.example.currencyconvertersample.ui.bottom_nav
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,13 +13,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.currencyconvertersample.ui.bottomNav.popular_currencies.HistoricalDataScreen
-import com.example.currencyconvertersample.ui.bottomNav.popular_currencies.PopularCurrenciesScreen
+import com.example.currencyconvertersample.utils.BASE
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -62,7 +60,8 @@ class BottomNavMainActivity : ComponentActivity() {
             ) {
                 NavHost(navController, startDestination = "popularCurrenciesScreen") {
                     composable("popularCurrenciesScreen") {
-                        PopularCurrenciesScreen()
+                        val fromCurrency = intent.getStringExtra(BASE) ?: ""
+                        LatestRatesScreen(fromCurrency)
                     }
                     composable("historicalDataScreen") {
                         HistoricalDataScreen()
