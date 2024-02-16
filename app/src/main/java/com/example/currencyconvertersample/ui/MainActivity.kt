@@ -122,7 +122,7 @@ fun CurrencySelectionDropdowns(
             }
             CommonButton("Details") {
                 val intent = Intent(context, BottomNavMainActivity::class.java).apply {
-                    putExtra("fromCurrency", fromCurrency)
+                    putExtra(BASE, fromCurrency)
                 }
                 context.startActivity(intent)
 
