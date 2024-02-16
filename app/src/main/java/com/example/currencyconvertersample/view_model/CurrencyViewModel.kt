@@ -24,8 +24,6 @@ class CurrencyViewModel @Inject constructor(
     var currencySymbolsResponse = mutableStateOf<Resource<CurrencySymbolsResponse>>(Resource.Loading())
         private set
 
-  /*  var errorMessage = mutableStateOf<String?>(null)
-        private set*/
 
     private val _latestCurrenciesResponse = MutableLiveData<Resource<LatestCurrenciesResponse>>()
      val latestCurrenciesResponse: LiveData<Resource<LatestCurrenciesResponse>> = _latestCurrenciesResponse
@@ -87,11 +85,6 @@ class CurrencyViewModel @Inject constructor(
         }
 
 
-    /*fun reloadData() {
-        loadCurrencySymbols()
-    }
-*/
-
 
 
     fun onAmountChanged(newAmount: String) {
@@ -100,37 +93,46 @@ class CurrencyViewModel @Inject constructor(
     }
 
     fun convertCurrency(){
-        val rate = getConversionRate(fromCurrency.value, toCurrency.value)
-        val result = amount.value.toDoubleOrNull()?.times(rate) ?: 0.0
-        convertedAmount.value = result.toString()
+            val latestResponse = latestCurrenciesResponse.value?.data
+            if (latestResponse != null) {
+                val rate = latestResponse.rates[toCurrency.value]
+                if (rate != null) {
+                    val result = amount.value.toDoubleOrNull()?.times(rate) ?: 0.0
+                    convertedAmount.value = result.toString()
+                }
+            } else {
+                convertedAmount.value = "0.0"
+            }
+
     }
 
     fun onConvertedAmountChanged(newConvertedAmount: String) {
-        convertedAmount.value = newConvertedAmount
-        val rate = getConversionRate(toCurrency.value,fromCurrency.value)
-        val result=  newConvertedAmount.toDoubleOrNull()?.times(rate)?: 0.0
-        amount.value = result.toString()
+        viewModelScope.launch {
+            val latestResponse = _latestCurrenciesResponse.value?.data
+            if (latestResponse != null) {
 
-    }
-    private val conversionRates = mapOf(
-        "USD_TO_EUR" to 0.85,
-        "EUR_TO_USD" to 1.18,
-        "USD_TO_JPY" to 110.0,
-        "JPY_TO_USD" to 0.0091,
-        "EUR_TO_GBP" to 0.86,
-        "GBP_TO_EUR" to 1.16,
-        "USD_TO_GBP" to 0.73,
-        "GBP_TO_USD" to 1.37, // Example rate
-        // Add more based on necessity
-    )
+                val rate = latestResponse.rates[toCurrency.value]
 
-    private fun getConversionRate(fromCurrency: String, toCurrency: String): Double {
-        val key = "${fromCurrency}_TO_$toCurrency"
-        return conversionRates[key] ?: 2.0
+                if (rate != null) {
+                  val result = newConvertedAmount.toDoubleOrNull()?.div(rate) ?: 0.0
+                    amount.value = "%.2f".format(result)
+                    convertedAmount.value = newConvertedAmount
+                } else {
+                    convertedAmount.value = "0.0"
+                }
+            } else {
+                convertedAmount.value = "0.0"
+            }
+        }
     }
+
 
     fun swapCurrencies(fromCurrency: String, toCurrency: String) {
-      // val temp = fromC
+        this.fromCurrency.value = toCurrency
+        this.toCurrency.value = fromCurrency
+
+        // Update the converted amount based on the new currencies
+        convertCurrency()
     }
 
 

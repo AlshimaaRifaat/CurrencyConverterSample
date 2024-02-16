@@ -75,17 +75,6 @@ fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyVie
     }
 }
 
-@Composable
-fun ErrorMessage(errorMessage: String?) {
-    errorMessage?.let {
-        Text(
-            text = it,
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.error
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
 
 @Composable
 fun CurrencySelectionDropdowns(
@@ -116,9 +105,11 @@ fun CurrencySelectionDropdowns(
             }
         }
 
-        Spacer(modifier = Modifier.width(10.dp))
-        CommonButton("Swap",{})
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+        CommonButton("Swap") {
+            viewModel.swapCurrencies(fromCurrency, toCurrency)
+        }
+        Spacer(modifier = Modifier.height(10.dp))
         Row {
             CurrencyDropdown(
                 expanded = expandedTo,
@@ -182,12 +173,11 @@ fun AmountInputField(value: String, label: String, onValueChange: (String) -> Un
     OutlinedTextField(
         value = value,
         onValueChange = { newValue ->
-            if (newValue.all { it.isDigit() || it == '.' }) {
+           if (newValue.all { it.isDigit() || it == '.' }) {
                 onValueChange(newValue)
             }
         },
         label = { Text(label) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.width(200.dp)
     )
 }
