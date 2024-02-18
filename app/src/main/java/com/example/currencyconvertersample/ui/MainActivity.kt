@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController, startDestination = "currencyConverter") {
                     composable("currencyConverter") {
-                        CurrencyConverterScreen(navController)
+                        CurrencyConverterScreen()
                     }
                     composable("bottomNavigation") {
                         // Your bottom navigation screen
@@ -44,7 +43,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyConverterViewModel = hiltViewModel()) {
+fun CurrencyConverterScreen(viewModel: CurrencyConverterViewModel = hiltViewModel()) {
     LaunchedEffect(key1 = true) {
         viewModel.fetchLatestRates()
     }
@@ -63,7 +62,7 @@ fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyCon
             is Resource.Success -> {
                 val symbols = currencySymbolsResponse.data?.symbols ?: emptyMap()
                 if (symbols.isNotEmpty()) {
-                    CurrencySelectionDropdowns(symbols, viewModel, navController)
+                    CurrencySelectionDropdowns(symbols, viewModel)
                 } else {
                     // Handle empty symbols map
                 }
@@ -81,8 +80,7 @@ fun CurrencyConverterScreen(navController: NavController, viewModel: CurrencyCon
 @Composable
 fun CurrencySelectionDropdowns(
     currencySymbols: Map<String, String>,
-    viewModel: CurrencyConverterViewModel,
-    navController: NavController
+    viewModel: CurrencyConverterViewModel
 ) {
     var expandedFrom by remember { mutableStateOf(false) }
     var expandedTo by remember { mutableStateOf(false) }
@@ -91,6 +89,7 @@ fun CurrencySelectionDropdowns(
     val amount by viewModel.amount
     val convertedAmount by viewModel.convertedAmount
     val context = LocalContext.current
+
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(

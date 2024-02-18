@@ -25,14 +25,14 @@ class CurrencyConverterViewModel @Inject constructor(
         private set
 
 
-    private val _latestCurrenciesResponse = MutableLiveData<Resource<LatestRatesResponse>>()
+     val _latestCurrenciesResponse = MutableLiveData<Resource<LatestRatesResponse>>()
      val latestCurrenciesResponse: LiveData<Resource<LatestRatesResponse>> = _latestCurrenciesResponse
 
 
     var convertedAmount = mutableStateOf<String>("")
         private set
 
-    var amount = mutableStateOf<String>("1")
+    var amount = mutableStateOf<String>("")
         private set
 
     var fromCurrency = mutableStateOf<String>("")
@@ -44,7 +44,7 @@ class CurrencyConverterViewModel @Inject constructor(
         loadCurrencySymbols()
     }
 
-    private fun loadCurrencySymbols() {
+     fun loadCurrencySymbols() {
         viewModelScope.launch {
             try {
                 if (isNetworkAvailable()) {
