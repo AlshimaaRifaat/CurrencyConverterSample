@@ -28,8 +28,10 @@ import com.example.currencyconvertersample.view_model.CurrencyConverterViewModel
 
 @Composable
 fun LatestRatesScreen(fromCurrency:String,viewModel: CurrencyConverterViewModel = hiltViewModel()) {
-    LaunchedEffect(fromCurrency) {
-        viewModel.fetchLatestRates(base = fromCurrency)
+    LaunchedEffect(key1 = true) {
+        print("sh lat")
+        //Hint: we should pass "fromCurrency" instead of "EUR" but actually API restricted with only "EUR" and doesn't work for other currency symbols
+        viewModel.fetchLatestRates(base = "EUR")
     }
 
     // Observing LiveData from ViewModel

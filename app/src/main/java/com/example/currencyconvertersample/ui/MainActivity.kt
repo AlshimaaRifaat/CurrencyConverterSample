@@ -45,7 +45,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CurrencyConverterScreen(viewModel: CurrencyConverterViewModel = hiltViewModel()) {
     LaunchedEffect(key1 = true) {
-        viewModel.fetchLatestRates()
+        //Hint "Convert" end point is not available for free monthly subscribtion,
+        // That's why i used this "latest" API end point
+        //but unfortunately, whatever base parameter passed to the api, it shows the rates for only base "EUR", as we should pass the selected from currency from the dropdown here
+        viewModel.fetchLatestRates("EUR")
     }
 
     val currencySymbolsResponse by viewModel.currencySymbolsResponse

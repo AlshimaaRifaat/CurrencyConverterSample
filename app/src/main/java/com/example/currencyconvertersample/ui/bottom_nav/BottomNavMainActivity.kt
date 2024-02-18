@@ -59,12 +59,12 @@ class BottomNavMainActivity : ComponentActivity() {
                 }
             ) {
                 NavHost(navController, startDestination = "popularCurrenciesScreen") {
+                    val fromCurrency = intent.getStringExtra(BASE) ?: ""
                     composable("popularCurrenciesScreen") {
-                        val fromCurrency = intent.getStringExtra(BASE) ?: ""
                         LatestRatesScreen(fromCurrency)
                     }
                     composable("historicalDataScreen") {
-                        HistoricalDataScreen()
+                        HistoricalDataScreen(fromCurrency)
                     }
                 }
             }

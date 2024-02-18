@@ -10,7 +10,9 @@ import com.example.currencyconvertersample.utils.NetworkHelper
 import com.example.currencyconvertersample.utils.Resource
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.MediaType.Companion
 import org.junit.Assert.assertEquals
@@ -21,6 +23,7 @@ import org.junit.Test
 import retrofit2.Response
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.After
 
 
 @ExperimentalCoroutinesApi
@@ -131,5 +134,10 @@ class CurrencyConverterViewModelTest {
         assertEquals("85.0", viewModel.convertedAmount.value)
     }
 
+    @After
+    fun tearDown() {
+        // Resetting the main dispatcher after the test
+        Dispatchers.resetMain()
+    }
 
 }

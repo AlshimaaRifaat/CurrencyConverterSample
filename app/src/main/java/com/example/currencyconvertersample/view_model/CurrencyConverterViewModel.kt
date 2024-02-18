@@ -64,7 +64,7 @@ class CurrencyConverterViewModel @Inject constructor(
         }
     }
 
-     fun fetchLatestRates(base: String ? = null,apiKey: String? = API_KEY) = viewModelScope.launch {
+     fun fetchLatestRates(base: String ,apiKey: String? = API_KEY) = viewModelScope.launch {
         _latestCurrenciesResponse.postValue(Resource.Loading())
         try {
             val response = repository.getLatestRates(base ?: ""  ,apiKey ?: API_KEY)
